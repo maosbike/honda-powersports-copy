@@ -4970,13 +4970,36 @@ var HONDAPS_FIND_AND_COMPARE_FOOTER = {
   // estado inicial SIN transición (grande + abajo, ya visible)
   img.style.transition="none"; rest(false);
   // disparar la entrada cuando el hero está en vista (= clase .scroll-ani), re-dispara al volver
-  var io=new IntersectionObserver(function(es){es.forEach(function(e){rest(e.isIntersecting);});},{threshold:0.2});
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){rest(true);io.unobserve(e.target);}});},{threshold:0.2});
   io.observe(hero);
   requestAnimationFrame(function(){requestAnimationFrame(function(){
     if(hero.getBoundingClientRect().top < window.innerHeight*0.85) rest(true);
   });});
-  window.addEventListener("resize",function(){var on=hero.getBoundingClientRect().top<window.innerHeight*0.85;rest(on);});
+  window.addEventListener("resize",function(){rest(true);});
 },700);});</script>
+<script src="../../../../../js/lenis.min.js"></script>
+<script id="lenis-swap">window.addEventListener("load",function(){setTimeout(function(){
+  try{
+    // destruir Locomotive de Honda (instancia en window.scroll u otra)
+    var loco=null;for(var k in window){try{var v=window[k];if(v&&v.scroll&&typeof v.scrollTo==="function"&&v.scroll.instance){loco=v;break;}}catch(e){}}
+    if(loco&&typeof loco.destroy==="function")loco.destroy();
+    document.documentElement.classList.remove("has-scroll-smooth","has-scroll-init","has-scroll-scrolling");
+    var cont=document.querySelector("[data-scroll-container]");
+    if(cont){cont.style.transform="none";cont.style.position="";cont.style.top="";cont.style.left="";cont.style.width="";cont.removeAttribute("style");}
+    document.documentElement.style.height="";document.body.style.height="";document.body.style.overflow="";
+  }catch(e){}
+  // Lenis: smooth preciso
+  if(window.Lenis){
+    var lenis=new Lenis({lerp:0.11,wheelMultiplier:1,smoothWheel:true,syncTouch:false});
+    function raf(t){lenis.raf(t);requestAnimationFrame(raf);}requestAnimationFrame(raf);
+    window.__lenis=lenis;
+    // anclas suaves
+    document.querySelectorAll(`a[href^="#"]`).forEach(function(a){a.addEventListener("click",function(e){var id=a.getAttribute("href");if(id.length<2)return;var el=document.querySelector(id);if(!el)return;e.preventDefault();lenis.scrollTo(el,{offset:-70});});});
+  }
+  // reveals: replicar is-inview de Locomotive con IntersectionObserver
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("is-inview");}});},{threshold:0.12,rootMargin:"0px 0px -6% 0px"});
+  document.querySelectorAll("[data-scroll]").forEach(function(el){io.observe(el);});
+},900);});</script>
 </body>
 </html>
 <!-- END: ~/Views/Powersports/Layouts/Basic.cshtml -->
